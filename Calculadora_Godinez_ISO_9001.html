@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sobrevivencia Godínez</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        signature: ['"Great Vibes"', 'cursive'], // Tipografía súper elegante para el footer
+                    },
+                    colors: {
+                        rosegold: {
+                            100: '#f9ebea',
+                            300: '#e6b3b3',
+                            500: '#b56576',
+                            700: '#6d3c47'
+                        },
+                        pinkcorp: {
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f472b6',
+                            400: '#e879f9',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            800: '#9d174d',
+                            900: '#831843',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 40px -10px rgba(219, 39, 119, 0.15), 0 10px 15px -5px rgba(219, 39, 119, 0.05);
+            border: 1px solid rgba(251, 207, 232, 0.6);
+        }
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+        .option-card:hover {
+            border-color: #fbcfe8;
+            background-color: #fdf2f8;
+            transform: translateY(-2px);
+        }
+        .option-card.selected {
+            border-color: #db2777;
+            background-color: #fdf2f8;
+            box-shadow: 0 4px 15px -3px rgba(219, 39, 119, 0.2);
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fancy-gradient-text {
+            background: linear-gradient(to right, #9d174d, #db2777, #b56576);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Custom radio button styling */
+        .custom-radio {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f472b6;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            margin-right: 12px;
+            transition: all 0.2s ease;
+        }
+        .option-card.selected .custom-radio {
+            border-color: #db2777;
+        }
+        .option-card.selected .custom-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #db2777;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans selection:bg-pinkcorp-200 selection:text-pinkcorp-900">
+
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+        
+        <!-- Elementos decorativos de fondo -->
+        <div class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-pinkcorp-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+        <div class="absolute bottom-[-10%] right-[-5%] w-80 h-80 bg-rosegold-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60"></div>
+
+        <div class="w-full max-w-2xl relative z-10">
+            
+            <!-- Encabezado de la App -->
+            <div class="text-center mb-8 slide-up">
+                <span class="inline-block px-4 py-1 rounded-full bg-white border border-pinkcorp-200 text-pinkcorp-600 font-semibold text-xs tracking-widest uppercase mb-3 shadow-sm">
+                    ✨ Diagnóstico Corporativo
+                </span>
+                <h1 class="font-serif text-3xl md:text-4xl font-bold text-pinkcorp-900 leading-tight mb-2">
+                    Nivel de Madurez <span class="fancy-gradient-text italic">ISO 9001</span>
+                </h1>
+                <p class="text-slate-600 text-sm md:text-base max-w-lg mx-auto">
+                    Descubre tu nivel de "Sobrevivencia Godínez" frente al estrés, los bomberazos y la gestión de calidad en tu día a día.
+                </p>
+            </div>
+
+            <div class="glass-card rounded-3xl overflow-hidden slide-up" style="animation-delay: 0.1s;">
+                
+                <!-- Barra de progreso -->
+                <div id="progress-container" class="w-full h-1.5 bg-pinkcorp-100 hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-pinkcorp-400 to-pinkcorp-600 progress-bar" style="width: 0%"></div>
+                </div>
+
+                <div class="p-6 md:p-10">
+                    
+                    <!-- Pantalla de Inicio -->
+                    <div id="start-screen" class="text-center py-8">
+                        <div class="w-20 h-20 bg-pinkcorp-50 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-inner mb-6 border border-pinkcorp-100">
+                            💼
+                        </div>
+                        <h2 class="font-serif text-2xl font-bold text-pinkcorp-900 mb-4">¿Estás preparado(a) para el mundo corporativo real?</h2>
+                        <p class="text-slate-600 text-sm mb-8 leading-relaxed">
+                            Evalúa tus metodologías de trabajo en solo 5 preguntas rápidas. Analizaremos tu fijación de metas, manejo de crisis y derecho a la desconexión.
+                        </p>
+                        <button onclick="startQuiz()" class="bg-gradient-to-r from-pinkcorp-600 to-pinkcorp-700 text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-pinkcorp-500/30 hover:shadow-pinkcorp-500/50 hover:scale-[1.02] transition-all duration-200 text-sm uppercase tracking-wider">
+                            Comenzar Diagnóstico
+                        </button>
+                    </div>
+
+                    <!-- Contenedor de Preguntas -->
+                    <div id="question-container" class="hidden min-h-[300px] flex flex-col justify-center">
+                        <div class="flex justify-between items-end mb-6">
+                            <span id="question-counter" class="text-xs font-bold uppercase tracking-widest text-pinkcorp-400">Pregunta 1 de 5</span>
+                            <span class="text-[10px] font-semibold bg-pinkcorp-50 text-pinkcorp-600 px-2 py-1 rounded border border-pinkcorp-100" id="topic-badge">S.M.A.R.T.</span>
+                        </div>
+                        <h3 id="question-text" class="font-serif text-xl md:text-2xl font-bold text-pinkcorp-900 mb-6 leading-snug">
+                            Cargando pregunta...
+                        </h3>
+                        
+                        <div id="options-container" class="space-y-3">
+                            <!-- Las opciones se inyectarán aquí con JS -->
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button id="next-btn" onclick="nextQuestion()" disabled class="bg-slate-200 text-slate-400 font-bold px-6 py-2.5 rounded-xl cursor-not-allowed transition-all duration-200 text-sm uppercase tracking-wider flex items-center">
+                                Siguiente <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor de Resultados -->
+                    <div id="result-container" class="hidden text-center py-4">
+                        <span class="inline-block px-3 py-1 rounded-full bg-pinkcorp-100 text-pinkcorp-700 font-bold text-xs tracking-widest uppercase mb-4">
+                            Resultado del Diagnóstico
+                        </span>
+                        
+                        <div class="relative w-32 h-32 mx-auto mb-6">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path class="text-pinkcorp-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path id="score-circle" class="text-pinkcorp-600 transition-all duration-1000 ease-out" stroke-dasharray="0, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span id="final-score" class="text-3xl font-extrabold text-pinkcorp-900 leading-none">0</span>
+                                <span class="text-[10px] uppercase font-bold text-slate-400">Puntos</span>
+                            </div>
+                        </div>
+
+                        <h2 id="result-title" class="font-serif text-2xl font-bold text-pinkcorp-900 mb-3">Título</h2>
+                        <p id="result-desc" class="text-slate-600 text-sm leading-relaxed mb-6 bg-pinkcorp-50/50 p-4 rounded-xl border border-pinkcorp-100">
+                            Descripción
+                        </p>
+
+                        <button onclick="restartQuiz()" class="text-pinkcorp-600 hover:text-pinkcorp-800 font-semibold text-sm uppercase tracking-wider transition-colors border-b-2 border-transparent hover:border-pinkcorp-300 pb-1">
+                            Volver a evaluar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full py-6 text-center bg-white/50 backdrop-blur-sm border-t border-pinkcorp-100 z-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <span class="font-serif italic text-lg md:text-xl font-medium" style="color: #6d3c47; letter-spacing: 0.5px;">
+                by Dainocoso embajadora Google
+            </span>
+        </div>
+    </footer>
+
+    <script>
+        // Base de datos de preguntas aplicando metodologías específicas
+        const questions = [
+            {
+                topic: "Fijación de Metas",
+                badge: "S.M.A.R.T.",
+                text: "¿Cómo defines tus objetivos y prioridades trimestrales en la oficina?",
+                options: [
+                    { text: "No hay metas fijas; le echo ganas a lo que vaya saliendo en el día.", points: 1 },
+                    { text: "Tengo una lista general, pero las prioridades cambian cada semana según el humor del jefe.", points: 2 },
+                    { text: "Utilizo metas S.M.A.R.T. (Específicas, Medibles, Alcanzables, Relevantes y con Tiempo definido).", points: 3 }
+                ]
+            },
+            {
+                topic: "Manejo de Crisis",
+                badge: "Gestión de Riesgos",
+                text: "¿Qué haces cuando te asignan un 'bomberazo' urgente a las 5:30 PM?",
+                options: [
+                    { text: "Lo acepto, me estreso y me quedo hasta las 9 PM. Es parte de ser Godínez.", points: 1 },
+                    { text: "Lo hago de mala gana y aviso que al día siguiente llegaré un poco más tarde.", points: 2 },
+                    { text: "Evalúo el impacto, aplico control de cambios y reasigno prioridades con mi líder antes de actuar.", points: 3 }
+                ]
+            },
+            {
+                topic: "Estandarización",
+                badge: "ISO Documental",
+                text: "Si mañana te vas de vacaciones por 2 semanas sin acceso a celular, ¿qué pasa con tu área?",
+                options: [
+                    { text: "El área colapsa. Mi teléfono no dejaría de sonar estando en la playa.", points: 1 },
+                    { text: "Dejo unos archivos de Excel y post-its explicativos, pero seguro cometerán algunos errores.", points: 2 },
+                    { text: "Todo fluye. Mis procesos están documentados y estandarizados para que cualquiera los ejecute.", points: 3 }
+                ]
+            },
+            {
+                topic: "Estimación de Tiempos",
+                badge: "Método PERT",
+                text: "¿Cómo calculas el tiempo de entrega cuando te piden un nuevo proyecto?",
+                options: [
+                    { text: "Digo que 'mañana queda' solo para agradar y quitarme la presión inmediata.", points: 1 },
+                    { text: "Calculo el tiempo ideal que me tomaría y le sumo un par de días 'por si acaso'.", points: 2 },
+                    { text: "Uso la metodología PERT, ponderando escenarios optimistas, pesimistas y los más probables.", points: 3 }
+                ]
+            },
+            {
+                topic: "Salud Mental",
+                badge: "Bienestar ISO",
+                text: "Respecto a tu derecho a la desconexión y clima laboral:",
+                options: [
+                    { text: "Respondo correos y WhatsApps desde la cama a las 11 PM. El deber llama.", points: 1 },
+                    { text: "Intento desconectarme, pero tengo las alertas activadas en el celular por si explota algo.", points: 2 },
+                    { text: "Respeto mis horarios ciegamente; entiendo que un ambiente sano es requisito para dar calidad.", points: 3 }
+                ]
+            }
+        ];
+
+        // Estado de la aplicación
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let currentSelectedPoints = 0;
+
+        // Referencias del DOM
+        const startScreen = document.getElementById('start-screen');
+        const questionContainer = document.getElementById('question-container');
+        const resultContainer = document.getElementById('result-container');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const questionCounter = document.getElementById('question-counter');
+        const topicBadge = document.getElementById('topic-badge');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            progressContainer.classList.remove('hidden');
+            questionContainer.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            // Reiniciar estado
+            currentSelectedPoints = 0;
+            nextBtn.disabled = true;
+            nextBtn.classList.replace('bg-pinkcorp-600', 'bg-slate-200');
+            nextBtn.classList.replace('text-white', 'text-slate-400');
+            nextBtn.classList.add('cursor-not-allowed');
+            nextBtn.classList.remove('hover:bg-pinkcorp-700', 'shadow-md');
+
+            // Actualizar UI con animación
+            questionContainer.classList.remove('fade-in');
+            void questionContainer.offsetWidth; // Forzar reflow
+            questionContainer.classList.add('fade-in');
+
+            const q = questions[currentQuestionIndex];
+            
+            // Actualizar progreso
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            questionCounter.innerText = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            topicBadge.innerText = q.badge;
+            questionText.innerText = q.text;
+
+            // Renderizar opciones
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option-card flex items-center p-4 bg-white border border-pinkcorp-100 rounded-xl cursor-pointer';
+                optDiv.onclick = () => selectOption(optDiv, opt.points);
+                
+                optDiv.innerHTML = `
+                    <div class="custom-radio"></div>
+                    <span class="text-sm text-slate-700 leading-tight font-medium ml-1">${opt.text}</span>
+                `;
+                optionsContainer.appendChild(optDiv);
+            });
+        }
+
+        function selectOption(element, points) {
+            // Remover selección anterior
+            const options = optionsContainer.children;
+            for(let i=0; i<options.length; i++){
+                options[i].classList.remove('selected');
+            }
+            // Seleccionar actual
+            element.classList.add('selected');
+            currentSelectedPoints = points;
+
+            // Habilitar botón siguiente
+            nextBtn.disabled = false;
+            nextBtn.classList.replace('bg-slate-200', 'bg-pinkcorp-600');
+            nextBtn.classList.replace('text-slate-400', 'text-white');
+            nextBtn.classList.remove('cursor-not-allowed');
+            nextBtn.classList.add('hover:bg-pinkcorp-700', 'shadow-md');
+        }
+
+        function nextQuestion() {
+            if (currentSelectedPoints === 0) return;
+            
+            score += currentSelectedPoints;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            questionContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            progressBar.style.width = '100%';
+
+            const scoreDisplay = document.getElementById('final-score');
+            const scoreCircle = document.getElementById('score-circle');
+            const title = document.getElementById('result-title');
+            const desc = document.getElementById('result-desc');
+
+            // Animación de puntaje
+            let currentDisplayScore = 0;
+            const timer = setInterval(() => {
+                if (currentDisplayScore >= score) {
+                    clearInterval(timer);
+                } else {
+                    currentDisplayScore++;
+                    scoreDisplay.innerText = currentDisplayScore;
+                }
+            }, 50);
+
+            // Calcular porcentaje para el círculo (max 15 pts)
+            const percentage = (score / 15) * 100;
+            setTimeout(() => {
+                scoreCircle.setAttribute('stroke-dasharray', `${percentage}, 100`);
+            }, 100);
+
+            // Lógica de diagnóstico
+            if (score <= 8) {
+                title.innerText = "🚨 Godínez en Modo Apaga-Incendios";
+                desc.innerHTML = "<strong>Sobrevivencia Baja.</strong> Tu riesgo de burnout es inminente. Trabajas bajo el dictamen de las urgencias y careces de estructura documental. Necesitas implementar estandarización urgente (ISO 9001) antes de que el estrés consuma tu carrera.";
+                scoreCircle.classList.replace('text-pinkcorp-600', 'text-rose-500');
+            } else if (score <= 12) {
+                title.innerText = "🌸 Godínez Estratégico en Crecimiento";
+                desc.innerHTML = "<strong>Sobrevivencia Media.</strong> Tienes buenas nociones de orden y calidad, pero los cambios repentinos aún te desestabilizan. Aprende a aplicar metodologías (PERT, SMART) para negociar entregas con datos fríos y defender tu tiempo personal.";
+                scoreCircle.classList.replace('text-pinkcorp-600', 'text-amber-500');
+            } else {
+                title.innerText = "✨ Máster ISO 9001 (Inmune al Caos)";
+                desc.innerHTML = "<strong>Sobrevivencia Alta.</strong> ¡Felicidades! Eres el referente de excelencia operativa en tu oficina. Dominas tus procesos, tu tiempo y proteges tu paz mental. Eres el candidato ideal para liderar auditorías internas y exigir el aumento que mereces.";
+                scoreCircle.classList.replace('text-pinkcorp-600', 'text-emerald-500');
+            }
+        }
+
+        function restartQuiz() {
+            resultContainer.classList.add('hidden');
+            document.getElementById('score-circle').setAttribute('stroke-dasharray', '0, 100');
+            document.getElementById('score-circle').className = "transition-all duration-1000 ease-out text-pinkcorp-600";
+            startScreen.classList.remove('hidden');
+            progressContainer.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
